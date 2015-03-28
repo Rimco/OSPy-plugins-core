@@ -1,0 +1,64 @@
+$def with(plugin_options, events)
+
+$var title: Weather-based Rain Delay
+$var page: plugins
+
+<script>
+    // Initialize behaviors
+    jQuery(document).ready(function(){
+
+        jQuery("#cSubmit").click(function() {
+            jQuery("#pluginForm").submit();
+        });
+        jQuery("button#cCancel").click(function(){
+            window.location="/";
+        });
+
+    });
+</script>
+
+<div id="plugin">
+    <div class="title">Weather-based Rain Delay</div>
+    <p>When weather-based rain delay is enabled, the weather will be checked for rain every hour. If the weather reports any condition suggesting rain, a rain delay is automatically issued using the below set delay duration.</p>
+    <form id="pluginForm" action="$plugins.plugin_url('weather_based_rain_delay.settings_page')" method="post">
+        <table class="optionList">
+            <tr>
+                <td style='text-transform: none;'>Use Automatic Rain Delay:</td>
+                <td>
+                    <input name='enabled' type='checkbox'${" checked" if plugin_options['enabled'] else ""}>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Delay Duration (hours):</td>
+                <td>
+                    <input name='delay_duration' type='number' min="0" max="96" value='$plugin_options["delay_duration"]'>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Weather Provider:</td>
+                <td>
+                    <select name="weather_provider">
+                        <option value="yahoo" ${"selected" if plugin_options["weather_provider"]=="yahoo" else ""}>Yahoo!</option>
+                        <option value="wunderground" ${"selected" if plugin_options["weather_provider"]=="wunderground" else ""}>Wunderground</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Wunderground API Key:</td>
+                <td>
+                    <input name='wapikey' type='text' value='$plugin_options["wapikey"]'>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Status:</td>
+                <td>
+                    <textarea style="font-family: monospace;" rows="7" cols="55" readonly>$'\n'.join(events)</textarea>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="controls">
+    <button id="cSubmit" class="submit"><b>Submit</b></button>
+    <button id="cCancel" class="cancel danger">Cancel</button>
+</div>
