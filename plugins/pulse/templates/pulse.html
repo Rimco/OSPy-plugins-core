@@ -1,0 +1,52 @@
+$def with (plugin_options, events)
+
+$var title: Pulse output
+$var page: plugins
+
+<script>
+    // Initialize behaviors
+    jQuery(document).ready(function(){
+        jQuery("#cSubmit").click(function() {
+            jQuery("#pluginForm").submit();
+        });
+    });
+
+</script>
+
+
+<div id="plugin">
+    <div class="title">Pulse output</div>
+    <p>This plugin sends a 1Hz signal to a selected output for a given amount of time. (To discover the location of a valve.)</p>
+    <br>
+
+    <form id="pluginForm" action="$plugins.plugin_url('pulse.start_page')" method="post">
+        <table class="optionList">
+            <tr>
+                <td style='text-transform: none;'>Select Output:</td>
+                <td>
+                    <select name="test_output">
+                        $for station in stations.get():
+                            <option value="${str(station.index)}" ${"selected" if plugin_options["test_output"]==station.index else ""}>${station.name} (Output ${str(station.index+1)})</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Time to test:</td>
+                <td>
+                    <input name='test_time' type='number' value='$plugin_options["test_time"]'>
+                </td>
+            </tr>
+            <tr>
+                <td style='text-transform: none;'>Status:</td>
+                <td>
+                    <textarea style="font-family: monospace;" rows="7" cols="35" readonly>$'\n'.join(events)</textarea>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<div id="controls">
+    <button id="cSubmit" class="submit"><b>Start test</b></button>
+    <a href="?stop" class="button cancel danger"><b>Stop test</b></a>
+    <a href="" class="button cancel danger">Cancel</a>
+</div>
