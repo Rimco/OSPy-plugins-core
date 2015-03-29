@@ -63,11 +63,7 @@ class WeatherLevelChecker(Thread):
         while not self._stop.is_set():
             try:
                 log.clear(NAME)
-                if not plugin_options['enabled']:
-                    if NAME in level_adjustments:
-                        del level_adjustments[NAME]
-                    self._sleep(5)
-                else:
+                if plugin_options['enabled']:
                     log.debug(NAME, "Checking weather status...")
                     remove_data(['history_', 'conditions_', 'forecast10day_'])
 
@@ -133,6 +129,13 @@ class WeatherLevelChecker(Thread):
                     level_adjustments[NAME] = water_adjustment / 100
 
                     self._sleep(3600)
+
+                else:
+                    log.clear(NAME)
+                    log.info(NAME, 'Plug-in is disabled.')
+                    if NAME in level_adjustments:
+                        del level_adjustments[NAME]
+                    self._sleep(24*3600)
 
             except Exception:
                 err_string = ''.join(traceback.format_exc())

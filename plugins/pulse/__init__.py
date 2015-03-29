@@ -57,7 +57,6 @@ class PulseSender(Thread):
         log.info(NAME, 'Test stopped.')
 
         # Activate again if needed:
-        print station.remaining_seconds
         if station.remaining_seconds != 0:
             station.active = True
 

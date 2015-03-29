@@ -3,6 +3,7 @@
 
 from ospy.webpages import ProtectedPage
 from ospy import log
+from ospy import helpers
 
 from plugins import plugin_url
 import web
@@ -41,18 +42,14 @@ class status_page(ProtectedPage):
     """Load an html page"""
 
     def GET(self):
+        qdict = web.input()
+        delete = helpers.get_input(qdict, 'delete', False, lambda x: True)
+        if delete:
+            try:
+                os.remove(log.EVENT_FILE)
+            except Exception:
+                pass
+            raise web.seeother(plugin_url(status_page), True)
+
         return self.plugin_render.system_debug(get_overview())
-
-
-class delete_page(ProtectedPage):
-    """delete data/events.log file"""
-
-    def POST(self):
-        try:
-            os.remove(log.EVENT_FILE)
-        except Exception:
-            pass
-
-        raise web.seeother(plugin_url(status_page), True)
-
 

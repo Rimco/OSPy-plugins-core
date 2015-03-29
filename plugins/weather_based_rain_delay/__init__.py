@@ -11,7 +11,7 @@ import urllib2
 import web
 from ospy.helpers import stop_onrain
 from ospy.log import log
-from ospy.options import options
+from ospy.options import options, rain_blocks
 from ospy.webpages import ProtectedPage
 from plugins import PluginOptions, plugin_url
 
@@ -52,27 +52,18 @@ class weather_to_delay(Thread):
             self._sleep_time -= 1
 
     def run(self):
-        once_text = True                          # text1 plug-in is disabled
-        two_text = True                           # text2 plug-in is enabled
-
         while not self._stop.is_set():
             try:
-                if plugin_options['enabled']:         # if Weather-based Rain Delay plug-in is enabled
-                    if once_text:                      # text enabled on the status window
-                        log.clear(NAME)
-                        log.info(NAME, 'Weather-based Rain Delay plug-in is enabled.')
-                        once_text = False
-                        two_text = True
-
+                if plugin_options['enabled']:  # if Weather-based Rain Delay plug-in is enabled
+                    log.clear(NAME)
                     log.info(NAME, 'Checking rain status...')
 
-                    weather = get_weather_data() if plugin_options[
-                                                        'weather_provider'] == "yahoo" else get_wunderground_weather_data()
+                    weather = get_weather_data() if plugin_options['weather_provider'] == "yahoo" else get_wunderground_weather_data()
                     delay = code_to_delay(weather['code'])
 
                     if delay > 0:
                         log.info(NAME, 'Rain detected: ' + weather['text'] + '. Adding delay of ' + str(delay))
-                        options.rain_block = datetime.datetime.now() + datetime.timedelta(hours=float(delay))
+                        rain_blocks[NAME] = datetime.datetime.now() + datetime.timedelta(hours=float(delay))
                         stop_onrain()
 
                     elif delay == 0:
@@ -80,24 +71,21 @@ class weather_to_delay(Thread):
 
                     elif delay < 0:
                         log.info(NAME, 'Good weather detected: ' + weather['text'] + '. Removing rain delay.')
-                        options.rain_block = datetime.datetime.now()
+                        if NAME in rain_blocks:
+                            del rain_blocks[NAME]
 
                     self._sleep(3600)
-
-
                 else:
-                    if two_text:                       # text disabled on the status window
-                        log.clear(NAME)
-                        log.info(NAME, 'Weather-based Rain Delay plug-in is disabled.')
-                        two_text = False
-                        once_text = True
-
-                    self._sleep(1)
+                    log.clear(NAME)
+                    log.info(NAME, 'Plug-in is disabled.')
+                    if NAME in rain_blocks:
+                        del rain_blocks[NAME]
+                    self._sleep(24 * 3600)
 
             except Exception:
                 err_string = ''.join(traceback.format_exc())
                 log.error(NAME, 'Weather-based Rain Delay plug-in:\n' + err_string)
-                self._sleep(60)
+                self._sleep(3600)
 
 
 checker = None
@@ -118,6 +106,8 @@ def stop():
         checker.stop()
         checker.join()
         checker = None
+    if NAME in rain_blocks:
+        del rain_blocks[NAME]
 
 
 # Resolve location to LID

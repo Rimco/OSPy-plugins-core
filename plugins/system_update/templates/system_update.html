@@ -2,23 +2,6 @@ $def with(stat, events)
 
 $var title: System update from GitHub
 $var page: plugins
-<script>
-    // Initialize behaviors
-    jQuery(document).ready(function(){
-        jQuery("button#cRefresh").click(function(){
-            window.location="$plugins.plugin_url('system_update.refresh_page')";
-        });
-        jQuery("button#cUpdate").click(function(){
-            window.location="$plugins.plugin_url('system_update.update_page')";
-        });
-        jQuery("button#cReboot").click(function(){
-            window.location="$plugins.plugin_url('system_update.restart_page')";
-        });
-        jQuery("button#cCancel").click(function(){
-            window.location="/";
-        });
-    });
-</script>
 
 <div id="plugin">
     <div class="title">System update from GitHub</div>
@@ -53,7 +36,7 @@ $var page: plugins
                 <td style='text-transform: none;'>Status:</td>
                 <td>
                     <textarea style="font-family: monospace;" rows="7" cols="100" readonly>$'\n'.join(events)</textarea><br/>
-                    <button id="cRefresh" class="refresh" type="button">Update Status</button>
+                    <a href="$plugins.plugin_url('system_update.refresh_page')" class="button refresh">Update Status</a>
                 </td>
             </tr>
             
@@ -62,9 +45,9 @@ $var page: plugins
 </div>
 <div id="controls">
     $if stat['can_update']:
-        <button id="cUpdate" class="options"><b>Update OSPy</b></button>
+        <a href="$plugins.plugin_url('system_update.update_page')" class="button"><b>Update OSPy</b></a>
     $else:
-        <button id="cUpToDate" class="cancel"><b>Up-to-date</b></button>
-    <button id="cReboot" class="reboot danger">Restart OSPy</button>
-    <button id="cCancel" class="cancel danger">Back</button>
+        <a class="button cancel"><b>Up-to-date</b></a>
+    <a href="$plugins.plugin_url('system_update.restart_page')" class="button reboot danger">Restart OSPy</a>
+    <a href="/" class="button cancel danger">Back</a>
 </div>

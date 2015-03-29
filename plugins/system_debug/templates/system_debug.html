@@ -3,15 +3,6 @@ $def with(overview)
 $var title: System Debug Information
 $var page: plugins
 
-<script>
-    // Initialize behaviors
-    jQuery(document).ready(function(){
-        jQuery("#cCancel").click(function() {
-            jQuery("#pluginForm").submit();
-        });
-    });
-</script>
-
 <div id="plugin">
     <div class="title">System Debug Information</div>
     <p>This plugin prints debug information from events.log file.</p>
@@ -28,6 +19,6 @@ $var page: plugins
 </div>
 
 <div id="controls">
-    <button id="cCancel" class="cancel danger">Delete file</button>
+    <a href="?delete" class="button cancel danger"><b>Delete file</b></a>
 </div>
 
