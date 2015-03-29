@@ -16,7 +16,8 @@ $var page: plugins
 
 <div id="plugin">
     <div class="title">Pulse output</div>
-    <p>This plugin sends a 1Hz signal to a selected output for a given amount of time. (To discover the location of a valve.)</p>
+    <p>This plugin pulses a selected circuit with a 1 Hz signal with adjusted time. (For discover the location of a
+        valve).</p>
     <br>
 
     <form id="pluginForm" action="$plugins.plugin_url('pulse.start_page')" method="post">
@@ -46,6 +47,7 @@ $var page: plugins
     </form>
 </div>
 <div id="controls">
+
     <button id="cSubmit" class="submit"><b>Start test</b></button>
     <a href="?stop" class="button cancel danger"><b>Stop test</b></a>
     <a href="" class="button cancel danger">Cancel</a>

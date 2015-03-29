@@ -5,9 +5,7 @@ Plugin switch relay to ON (2 sec) and next switch relay to OFF.
 
 
 The hardware should be connected as follows:
-
-
-<a href="/plugins/relay/static/images/schematics.png"><img src="/plugins/relay/static/images/schematics.png" width="30%"></a>
+<a href="/plugins/relay/static/images/schematics.png"><img src="/plugins/relay/static/images/schematics.png" width="100%"></a>
 
 
 Example use relay test plugin:  

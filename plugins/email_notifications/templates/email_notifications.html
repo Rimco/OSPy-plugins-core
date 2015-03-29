@@ -10,11 +10,9 @@ $var page: plugins
         jQuery("#cSubmit").click(function() {
             jQuery("#pluginForm").submit();
         });
-        jQuery("button#cCancel").click(function(){
-            window.location="/";
-        });
         jQuery("#cTest").click(function() {
-            jQuery("#pluginForm2").submit();
+            jQuery("#pluginForm").attr('action', "$plugins.plugin_url('email_notifications.settings_page')?test")
+            jQuery("#pluginForm").submit();
         });
 
     });
@@ -76,13 +74,11 @@ $var page: plugins
             </tr>
         </table>
     </form>
-    <form id="pluginForm2" action="$plugins.plugin_url('email_notifications.test_page')" method="post">
-    </form>
 </div>
 <div id="controls">
     <button id="cSubmit" class="submit"><b>Submit</b></button>
     <button id="cTest" class="submit"><b>Send a test e-mail</b></button>
-    <button id="cCancel" class="cancel danger">Cancel</button>
+    <a href="" class="button cancel danger">Cancel</a>
 </div>
                                   
                      

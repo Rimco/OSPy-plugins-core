@@ -20,7 +20,8 @@ from plugins import PluginOptions, plugin_url
 from ospy.options import options
 from ospy.stations import stations
 from ospy.inputs import inputs
-from ospy.log import log
+from ospy.log import log, EVENT_FILE
+from ospy.helpers import datetime_string, get_input
 
 
 NAME = 'Email Notifications'
@@ -65,10 +66,10 @@ class EmailSender(Thread):
             time.sleep(1)
             self._sleep_time -= 1
 
-    def try_mail(self, subject, text, attachment=None):
+    def try_mail(self, text, attachment=None):
         log.clear(NAME)
         try:
-            email(subject, text, attachment)  # send email with attachment from
+            email(text, attach=attachment)  # send email with attachment from
             log.info(NAME, 'Email was sent:\n' + text)
         except Exception:
             err_string = ''.join(traceback.format_exc())
@@ -78,46 +79,38 @@ class EmailSender(Thread):
         last_rain = False
         finished_count = len([run for run in log.finished_runs() if not run['blocked']])
 
-        if email_options["emlpwron"]:      # if eml_power_on send email is enable (on)
-            body = ('On ' + time.strftime("%d.%m.%Y at %H:%M:%S", time.localtime(time.time())) +
-                    ': System was powered on.')
+        if email_options["emlpwron"]:  # if eml_power_on send email is enable (on)
+            body = (datetime_string() + ': System was powered on.')
+
             if email_options["emllog"]:
-                try:
-                   logfile = 'ospy/data/events.log' 
-                   if os.path.isfile(logfile) and os.access(logfile, os.R_OK):
-                      self.try_mail(email_options['emlsubject'], body, logfile)
-                   else:
-                      self.try_mail(email_options['emlsubject'], body) 
-                except:
-                    pass
+                self.try_mail(body, EVENT_FILE)
             else:
-                self.try_mail(email_options['emlsubject'], body)
-                
+                self.try_mail(body)
+
         while not self._stop.is_set():
             try:
                 # Send E-amil if rain is detected
                 if email_options["emlrain"]:
                     if inputs.rain_sensed() and not last_rain:
-                        body = ('On ' + time.strftime("%d.%m.%Y at %H:%M:%S", time.localtime(time.time())) +
-                                ': System detected rain.')
-                        self.try_mail(email_options['emlsubject'], body)
+                        body = (datetime_string() + ': System detected rain.')
+                        self.try_mail(body)
                     last_rain = inputs.rain_sensed()
 
                 # Send E-mail if a new finished run is found
                 if email_options["emlrun"]:
                     finished = [run for run in log.finished_runs() if not run['blocked']]
                     if len(finished) > finished_count:
-                        body = time.strftime("On %d.%m.%Y at %H:%M:%S:\n", time.localtime(time.time()))
+                        body = datetime_string() + ':\n'
                         for run in finished[finished_count:]:
                             duration = (run['end'] - run['start']).total_seconds()
                             minutes, seconds = divmod(duration, 60)
                             body += "Finished run:\n"
                             body += "  Program: %s\n" % run['program_name']
                             body += "  Station: %s\n" % stations.get(run['station']).name
-                            body += "  Start time: %s \n" % run['start'].strftime("%Y-%m-%d at %H:%M:%S")
+                            body += "  Start time: %s \n" % datetime_string(run['start'])
                             body += "  Duration: %02d:%02d\n\n" % (minutes, seconds)
 
-                        self.try_mail(email_options['emlsubject'], body)
+                        self.try_mail(body)
 
                     finished_count = len(finished)
 
@@ -149,32 +142,32 @@ def stop():
         email_sender = None
 
 
-def email(subject, text, attach=None):
+def email(text, subject=None, attach=None):
     """Send email with with attachments. If subject is None, the default will be used."""
     if email_options['emlusr'] != '' and email_options['emlpwd'] != '' and email_options['emladr'] != '':
-        gmail_user = email_options['emlusr']          # User name
-        gmail_name = options.name                     # OSPi name
-        gmail_pwd = email_options['emlpwd']           # User password
-        #--------------
+        gmail_user = email_options['emlusr']  # User name
+        gmail_name = options.name  # OSPi name
+        gmail_pwd = email_options['emlpwd']  # User password
+        # --------------
         msg = MIMEMultipart()
         msg['From'] = gmail_name
         msg['To'] = email_options['emladr']
         msg['Subject'] = subject or email_options['emlsubject']
         msg.attach(MIMEText(text))
-        if attach is not None:              # If insert attachments
+        if attach is not None and os.path.isfile(attach) and os.access(attach, os.R_OK):  # If insert attachments
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(open(attach, 'rb').read())
             encode_base64(part)
             part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(attach))
             msg.attach(part)
-        mailServer = smtplib.SMTP("smtp.gmail.com", 587)
-        mailServer.ehlo()
-        mailServer.starttls()
-        mailServer.ehlo()
-        mailServer.login(gmail_user, gmail_pwd)
-        mailServer.sendmail(gmail_name, email_options['emladr'],
-                            msg.as_string())   # name + e-mail address in the From: field
-        mailServer.close()
+        mail_server = smtplib.SMTP("smtp.gmail.com", 587)
+        mail_server.ehlo()
+        mail_server.starttls()
+        mail_server.ehlo()
+        mail_server.login(gmail_user, gmail_pwd)
+        mail_server.sendmail(gmail_name, email_options['emladr'],
+                             msg.as_string())  # name + e-mail address in the From: field
+        mail_server.close()
     else:
         raise Exception('E-mail plug-in is not properly configured!')
 
@@ -190,31 +183,17 @@ class settings_page(ProtectedPage):
 
     def POST(self):
         email_options.web_update(web.input())
+        qdict = web.input()
+        test = get_input(qdict, 'test', False, lambda x: True)
 
         if email_sender is not None:
             email_sender.update()
+
+            if test:
+                body = (datetime_string() + ': Test e-mail from e-mail notification plugin :-).')
+                email_sender.try_mail(body)
+
         raise web.seeother(plugin_url(settings_page), True)
-
-
-class test_page(ProtectedPage):
-    """send test e-mail (check correct user settings in form)."""
-
-    def POST(self):
-        body = ('On ' + time.strftime("%d.%m.%Y at %H:%M:%S", time.localtime(time.time())) +
-                ': Test e-mail from e-mail notification plugin :-).')
-        self.try_mail(email_options['emlsubject'], body)
-        raise web.seeother(plugin_url(settings_page), True)
-   
-    def try_mail(self, subject, text, attachment=None):
-        log.clear(NAME)
-        try:
-            email(subject, text, attachment)  # send email with attachment from
-            log.info(NAME, 'Email was sent:\n' + text)
-        except Exception:
-            err_string = ''.join(traceback.format_exc())
-            log.warning(NAME, 'Email was not sent!\n' + err_string)
-
-
 
 
 class settings_json(ProtectedPage):
