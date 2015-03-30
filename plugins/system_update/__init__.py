@@ -11,12 +11,19 @@ import web
 from ospy.webpages import ProtectedPage
 from ospy.helpers import restart
 from ospy.log import log
-from plugins import plugin_url
+from plugins import PluginOptions, plugin_url
 from ospy import version
 
 
 NAME = 'System Update'
 LINK = 'status_page'
+
+plugin_options = PluginOptions(
+    NAME,
+    {
+        'auto_update': False,
+    }
+)
 
 
 class StatusChecker(Thread):
@@ -104,6 +111,10 @@ class StatusChecker(Thread):
             try:
                 log.clear(NAME)
                 self._update_rev_data()
+
+                if self.status['can_update'] and plugin_options['auto_update']:
+                    perform_update()
+
                 self.started.set()
                 self._sleep(3600)
 
@@ -158,7 +169,14 @@ class status_page(ProtectedPage):
 
     def GET(self):
         checker.started.wait(10)    # Make sure we are initialized
-        return self.plugin_render.system_update(checker.status, log.events(NAME))
+        return self.plugin_render.system_update(plugin_options, log.events(NAME), checker.status)
+
+    def POST(self):
+        plugin_options.web_update(web.input())
+        if checker is not None:
+            checker.update()
+
+        raise web.seeother(plugin_url(status_page), True)
 
 
 class refresh_page(ProtectedPage):

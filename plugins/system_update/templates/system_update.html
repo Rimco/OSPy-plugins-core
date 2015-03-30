@@ -1,12 +1,22 @@
-$def with(stat, events)
+$def with(plugin_options, events, stat)
 
 $var title: System update from GitHub
 $var page: plugins
+<script>
+    // Initialize behaviors
+    jQuery(document).ready(function(){
+
+        jQuery("#cSubmit").click(function() {
+            jQuery("#pluginForm").submit();
+        });
+
+    });
+</script>
 
 <div id="plugin">
     <div class="title">System update from GitHub</div>
     <p>This plugin compares the local copy with the remote repository and can automatically update the local copy.</p>
-    <form id="pluginForm">
+    <form id="pluginForm" method="post">
         <table class="optionList">
             <tr>
                 <td style='text-transform: none;'><b>Remote repository:</b></td>
@@ -33,6 +43,12 @@ $var page: plugins
                 </td>
             </tr>
             <tr>
+                <td style='text-transform: none;'>Automatic update:</td>
+                <td>
+                    <input name='auto_update' type='checkbox'${" checked" if plugin_options['auto_update'] else ""}>
+                </td>
+            </tr>
+            <tr>
                 <td style='text-transform: none;'>Status:</td>
                 <td>
                     <textarea style="font-family: monospace;" rows="7" cols="100" readonly>$'\n'.join(events)</textarea><br/>
@@ -44,6 +60,7 @@ $var page: plugins
     </form>
 </div>
 <div id="controls">
+    <button id="cSubmit" class="submit"><b>Submit</b></button>
     $if stat['can_update']:
         <a href="$plugins.plugin_url('system_update.update_page')" class="button"><b>Update OSPy</b></a>
     $else:
