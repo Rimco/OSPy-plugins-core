@@ -83,8 +83,7 @@ class weather_to_delay(Thread):
                     self._sleep(24 * 3600)
 
             except Exception:
-                err_string = ''.join(traceback.format_exc())
-                log.error(NAME, 'Weather-based Rain Delay plug-in:\n' + err_string)
+                log.error(NAME, 'Weather-based Rain Delay plug-in:\n' + traceback.format_exc())
                 self._sleep(3600)
 
 

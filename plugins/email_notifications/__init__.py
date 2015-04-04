@@ -72,8 +72,7 @@ class EmailSender(Thread):
             email(text, attach=attachment)  # send email with attachment from
             log.info(NAME, 'Email was sent:\n' + text)
         except Exception:
-            err_string = ''.join(traceback.format_exc())
-            log.warning(NAME, 'Email was not sent!\n' + err_string)
+            log.error(NAME, 'Email was not sent!\n' + traceback.format_exc())
 
     def run(self):
         last_rain = False
@@ -117,8 +116,7 @@ class EmailSender(Thread):
                 self._sleep(5)
 
             except Exception:
-                err_string = ''.join(traceback.format_exc())
-                log.error(NAME, 'E-mail plug-in:\n' + err_string)
+                log.error(NAME, 'E-mail plug-in:\n' + traceback.format_exc())
                 self._sleep(60)
 
 

@@ -52,8 +52,7 @@ def get_overview():
         cmd = 'sudo i2cdetect -y ' + rev
         result.append(process(cmd))
     except Exception:
-        err_string = ''.join(traceback.format_exc())
-        log.error(NAME, 'System info plug-in:\n' + err_string)
+        log.error(NAME, 'System info plug-in:\n' + traceback.format_exc())
     log.info(NAME, result)
     return result
 

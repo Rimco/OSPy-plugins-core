@@ -138,8 +138,7 @@ class WeatherLevelChecker(Thread):
                     self._sleep(24*3600)
 
             except Exception:
-                err_string = ''.join(traceback.format_exc())
-                log.error(NAME, 'Weather-based water level plug-in:\n' + err_string)
+                log.error(NAME, 'Weather-based water level plug-in:\n' + traceback.format_exc())
                 self._sleep(3600)
 
 
