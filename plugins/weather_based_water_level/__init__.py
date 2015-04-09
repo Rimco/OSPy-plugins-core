@@ -219,6 +219,13 @@ def remove_data(prefixes):
             check_date -= day_delta
 
 
+def _try_float(val, default=0):
+    try:
+        return float(val)
+    except ValueError:
+        return default
+
+
 ################################################################################
 # Info queries:                                                                #
 ################################################################################
@@ -247,10 +254,10 @@ def history_info():
     result = {}
     for index, day_info in info.iteritems():
         result[index] = {
-            'temp_c': float(day_info['maxtempm']),
-            'rain_mm': float(day_info['precipm']),
-            'wind_ms': float(day_info['meanwindspdm']) / 3.6,
-            'humidity': float(day_info['humidity'])
+            'temp_c': _try_float(day_info['maxtempm'], 20),
+            'rain_mm': _try_float(day_info['precipm']),
+            'wind_ms': _try_float(day_info['meanwindspdm']) / 3.6,
+            'humidity': _try_float(day_info['humidity'], 50)
         }
 
     return result
@@ -270,10 +277,10 @@ def today_info():
     day_info = data['current_observation']
 
     result = {
-        'temp_c': float(day_info['temp_c']),
-        'rain_mm': float(day_info['precip_today_metric']),
-        'wind_ms': float(day_info['wind_kph']) / 3.6,
-        'humidity': float(day_info['relative_humidity'].replace('%', ''))
+        'temp_c': _try_float(day_info['temp_c'], 20),
+        'rain_mm': _try_float(day_info['precip_today_metric']),
+        'wind_ms': _try_float(day_info['wind_kph']) / 3.6,
+        'humidity': _try_float(day_info['relative_humidity'].replace('%', ''), 50)
     }
 
     return result
@@ -300,10 +307,10 @@ def forecast_info():
             if day_info['qpf_allday']['mm'] is None:
                 day_info['qpf_allday']['mm'] = 0
             result[index] = {
-                'temp_c': float(day_info['high']['celsius']),
-                'rain_mm': float(day_info['qpf_allday']['mm']),
-                'wind_ms': float(day_info['avewind']['kph']) / 3.6,
-                'humidity': float(day_info['avehumidity'])
+                'temp_c': _try_float(day_info['high']['celsius'], 20),
+                'rain_mm': _try_float(day_info['qpf_allday']['mm']),
+                'wind_ms': _try_float(day_info['avewind']['kph']) / 3.6,
+                'humidity': _try_float(day_info['avehumidity'], 50)
             }
 
     return result
