@@ -112,7 +112,7 @@ class StatusChecker(Thread):
                 log.clear(NAME)
                 self._update_rev_data()
 
-                if self.status['can_update'] and plugin_options['auto_update']:
+                if self.status['can_update'] and plugin_options['auto_update'] and not log.active_runs():
                     perform_update()
 
                 self.started.set()
