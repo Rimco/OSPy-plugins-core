@@ -6,11 +6,22 @@ from ospy import log
 from ospy import helpers
 
 from plugins import plugin_url
+from plugins import PluginOptions
 import web
 import os
 
 NAME = 'System Debug Information'
 LINK = 'status_page'
+
+debug_options = PluginOptions(
+    NAME,
+    {
+        "debug_event": True,
+        "info_event": True,
+        "warning_event": True,
+        "error_event": True
+    }
+)
 
 
 ################################################################################
@@ -25,15 +36,30 @@ stop = start
 
 def get_overview():
     """Returns the info data as a list of lines."""
-    result = []
+    result = []     
     try:
-        with open(log.EVENT_FILE) as fh:
-            result.append(fh.read())
+        for line in reversed(list(open(log.EVENT_FILE))):
+            if debug_options['debug_event']:
+              if 'DEBUG' in line:
+                result.append(line.strip())
+             
+            if debug_options['info_event']:
+              if 'INFO' in line:
+                result.append(line.strip())
+             
+            if debug_options['warning_event']:
+              if 'WARNING' in line:
+                result.append(line.strip())
+            
+            if debug_options['error_event']:
+              if 'ERROR' in line:
+                result.append(line.strip())       
+
+           
     except Exception:
         result.append('Error: Log file missing.')
 
     return result
-
 
 ################################################################################
 # Web pages:                                                                   #
@@ -51,5 +77,12 @@ class status_page(ProtectedPage):
                 pass
             raise web.seeother(plugin_url(status_page), True)
 
-        return self.plugin_render.system_debug(get_overview())
+        return self.plugin_render.system_debug(debug_options,get_overview())
 
+
+class settings_page(ProtectedPage):
+    """Save an html page for entering debug filtering."""
+
+    def POST(self):
+        debug_options.web_update(web.input())
+        raise web.seeother(plugin_url(status_page), True)
