@@ -22,6 +22,7 @@ plugin_options = PluginOptions(
     NAME,
     {
         'auto_update': False,
+        'use_update': False
     }
 )
 
@@ -109,13 +110,14 @@ class StatusChecker(Thread):
     def run(self):
         while not self._stop.is_set():
             try:
-                log.clear(NAME)
-                self._update_rev_data()
+                if plugin_options['use_update']:
+                    log.clear(NAME)
+                    self._update_rev_data()
 
-                if self.status['can_update'] and plugin_options['auto_update']:
-                    perform_update()
+                    if self.status['can_update'] and plugin_options['auto_update']:
+                        perform_update()
 
-                self.started.set()
+                    self.started.set()
                 self._sleep(3600)
 
             except Exception:
