@@ -19,6 +19,12 @@ $var page: plugins
     <form id="pluginForm" method="post">
         <table class="optionList">
             <tr>
+                <td style='text-transform: none;'>Use update plugin:</td>
+                <td>
+                    <input name='use_update' type='checkbox'${" checked" if plugin_options['use_update'] else ""}>
+                </td>
+            </tr>
+            <tr>
                 <td style='text-transform: none;'><b>Remote repository:</b></td>
                 <td>
                      $stat["remote"]
