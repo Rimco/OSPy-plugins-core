@@ -5,6 +5,11 @@ This plugin prints debug information from events log file.
 You must first enabled debug in options.  
 File can be deleted by pressing "Delete file" button.  
 
+Maximum number of records
+-----------
+* 0 = unlimited records  
+
+
 Event type
 -----------
 * debug message
