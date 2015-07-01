@@ -9,6 +9,7 @@ from plugins import plugin_url
 from plugins import PluginOptions
 import web
 import os
+import json
 
 NAME = 'System Debug Information'
 LINK = 'status_page'
@@ -76,6 +77,15 @@ def get_overview():
 
     return result
 
+def read_log():
+    """Read log from json file."""
+    try:                
+        logf = open(log.EVENT_FILE,"r")
+        return logf.read()
+
+    except IOError:
+        return []
+
 ################################################################################
 # Web pages:                                                                   #
 ################################################################################
@@ -101,3 +111,11 @@ class settings_page(ProtectedPage):
     def POST(self):
         debug_options.web_update(web.input())
         raise web.seeother(plugin_url(status_page), True)
+
+class log_page(ProtectedPage):
+    """Returns log in JSON format."""
+
+    def GET(self):
+        web.header('Access-Control-Allow-Origin', '*')
+        web.header('Content-Type', 'application/txt')
+        return json.dumps(read_log())
