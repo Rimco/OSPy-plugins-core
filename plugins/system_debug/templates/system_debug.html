@@ -18,6 +18,12 @@ $var page: plugins
     <form id="pluginForm" action="$plugins.plugin_url('system_debug.settings_page')" method="post">
         <table class="optionList">
             <tr>
+                <td style='text-transform: none;'>Maximum number of records:</td>
+                <td>
+                    <input name='log_records' type='number' value='$plugin_options["log_records"]'> (0 = unlimited)
+                </td>
+            </tr>
+            <tr>
                 <td style='text-transform: none;'>DEBUG message</td>
                 <td>
                     <input name='debug_event' type='checkbox'${" checked" if plugin_options['debug_event'] else ""}>
