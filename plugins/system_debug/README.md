@@ -31,5 +31,7 @@ Filtering data in log file
 
 File can be filtered by pressing "Submit" button.
 
+For download event-log file as txt click on to txt. 
+
 
 
