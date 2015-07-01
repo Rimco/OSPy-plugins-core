@@ -29,7 +29,7 @@ Filtering data in log file
 * ERROR message:  
   Select the ERROR message for filtering only ERROR message.  
 
-File can be filtered by pressing "Filtering file" button.
+File can be filtered by pressing "Submit" button.
 
 
 
