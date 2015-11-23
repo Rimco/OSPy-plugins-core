@@ -159,7 +159,7 @@ def get_wunderground_lid():
         if data is None:
             return ""
         elif len(data['RESULTS']) == 0:
-+            return ""    
+            return ""    
         lid = "zmw:" + data['RESULTS'][0]['zmw']
 
     return lid
