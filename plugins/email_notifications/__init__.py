@@ -103,11 +103,19 @@ class EmailSender(Thread):
                         for run in finished[finished_count:]:
                             duration = (run['end'] - run['start']).total_seconds()
                             minutes, seconds = divmod(duration, 60)
+                            cm = None
+                            try:
+                                from plugins import tank_humi_monitor
+                                cm = tank_humi_monitor.get_sonic_tank_cm()
+                                cm = str(cm) + " cm"
+                            except Exception:
+                                cm = "Not available"
                             body += "Finished run:\n"
                             body += "  Program: %s\n" % run['program_name']
                             body += "  Station: %s\n" % stations.get(run['station']).name
                             body += "  Start time: %s \n" % datetime_string(run['start'])
                             body += "  Duration: %02d:%02d\n\n" % (minutes, seconds)
+                            body += "Water level in tank: %s \n\n" % (cm)
 
                         self.try_mail(body)
 
