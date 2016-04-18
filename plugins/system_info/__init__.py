@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = 'Martin Pihrt'
 # this plugins print system info os on web 
 
 import platform
