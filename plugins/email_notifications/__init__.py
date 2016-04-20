@@ -84,7 +84,15 @@ class EmailSender(Thread):
             body = (datetime_string() + ': System was powered on.')
 
             if email_options["emllog"]:
-                self.try_mail(body, EVENT_FILE)
+                file_exists = os.path.exists(EVENT_FILE)
+                print file_exists
+                if file_exists:
+                   self.try_mail(body, EVENT_FILE)
+                   print body
+                else:
+                   body += ('\nError -  events.log file not exists!')
+                   print body
+                   self.try_mail(body)
             else:
                 self.try_mail(body)
 
@@ -109,7 +117,10 @@ class EmailSender(Thread):
                             try:
                                 from plugins import tank_humi_monitor
                                 cm = tank_humi_monitor.get_sonic_tank_cm()
-                                cm = str(cm) + " cm"
+                                if cm > 0:
+                                    cm = str(cm) + " cm"
+                                else: 
+                                    cm = "Error - I2C device not found!"
                             except Exception:
                                 cm = "Not available"
                             body += "Finished run:\n"
