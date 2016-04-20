@@ -21,12 +21,14 @@ Plugin setup
 * Check Send E-mail if a program has finished.
   If checked send e-mail if a program has finished into your e-mail address.  
   Example send email from system:  
-  On 17.02.2015 at 10:59:50:  
+  On 17.02.2015 10:59:50:  
   Finished run:  
   Program: Run-Once  
   Station: Station 02  
-  Start time: 2015-02-17 at 10:59:36  
-  Duration: 00:10
+  Start time: 2015-02-17 10:59:36  
+  Duration: 00:10  
+    
+  Water level in tank: 89 cm (if plugin is not installed: "Not available" or if plugin is enabled but not find hardware: "Error - I2C device not found!")
 
 * Your GMail username:  
   Type your username for Google mail.
