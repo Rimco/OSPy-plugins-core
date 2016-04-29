@@ -3,6 +3,15 @@ $def with(overview)
 $var title: System Information
 $var page: plugins
 
+<script>
+    // Initialize behaviors
+    jQuery(document).ready(function(){
+        jQuery("button#cCancel").click(function(){
+            window.location="/";
+        });
+    });
+</script>
+
 <div id="plugin">
     <div class="title">System Information</div>
     <p>This plugin prints all available system information.</p>
@@ -16,4 +25,7 @@ $var page: plugins
             </tr>
         </table>
     </form>
+</div>
+<div id="controls">
+    <button id="cCancel" class="cancel danger">Cancel</button>
 </div>
