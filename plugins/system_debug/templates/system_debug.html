@@ -9,6 +9,9 @@ $var page: plugins
         jQuery("#cSubmit").click(function() {
             jQuery("#pluginForm").submit();
         });
+        jQuery("button#cCancel").click(function(){
+            window.location="/";
+        });
     });
 </script>
 
@@ -57,7 +60,8 @@ $var page: plugins
 
 <div id="controls">
     <a href="?delete" class="button cancel danger"><b>Delete file</b></a> 
-    <button id="cSubmit" class="submit"><b>Submit</b></button>   
+    <button id="cSubmit" class="submit"><b>Submit</b></button> 
+    <button id="cCancel" class="cancel danger">Cancel</button>
     <p>Download event-log as <a href="$plugins.plugin_url('system_debug.log_page')">txt</a>.     
 </div>
 
