@@ -13,6 +13,8 @@ import web
 import os
 import json
 
+import i18n
+
 NAME = 'System Debug Information'
 LINK = 'status_page'
 
@@ -75,7 +77,7 @@ def get_overview():
 
            
     except Exception:
-        result.append('Error: Log file missing. Enable it in system options.')
+        result.append(_('Error: Log file missing. Enable it in system options.'))
 
     return result
 
