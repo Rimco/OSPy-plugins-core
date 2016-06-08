@@ -25,6 +25,8 @@ from ospy.inputs import inputs
 from ospy.log import log, EVENT_FILE
 from ospy.helpers import datetime_string, get_input
 
+import i18n
+
 
 NAME = 'Email Notifications'
 LINK = 'settings_page'
@@ -39,7 +41,7 @@ email_options = PluginOptions(
         'emlusr': '',
         'emlpwd': '',
         'emladr': '',
-        'emlsubject': "Report from OSPy"
+        'emlsubject': _('Report from OSPy')
     }
 )
 
@@ -72,25 +74,23 @@ class EmailSender(Thread):
         log.clear(NAME)
         try:
             email(text, attach=attachment)  # send email with attachment from
-            log.info(NAME, 'Email was sent:\n' + text)
+            log.info(NAME, _('Email was sent') + ':\n' + text)
         except Exception:
-            log.error(NAME, 'Email was not sent!\n' + traceback.format_exc())
+            log.error(NAME, _('Email was not sent!') + '\n' + traceback.format_exc())
 
     def run(self):
         last_rain = False
         finished_count = len([run for run in log.finished_runs() if not run['blocked']])
 
         if email_options["emlpwron"]:  # if eml_power_on send email is enable (on)
-            body = (datetime_string() + ': System was powered on.')
+            body = (datetime_string() + ': ' + _('System was powered on.'))
 
             if email_options["emllog"]:
                 file_exists = os.path.exists(EVENT_FILE)
-                print file_exists
                 if file_exists:
                    self.try_mail(body, EVENT_FILE)
-                   print body
                 else:
-                   body += ('\nError -  events.log file not exists!')
+                   body += '\n' + _('Error -  events.log file not exists!')
                    print body
                    self.try_mail(body)
             else:
@@ -101,7 +101,7 @@ class EmailSender(Thread):
                 # Send E-amil if rain is detected
                 if email_options["emlrain"]:
                     if inputs.rain_sensed() and not last_rain:
-                        body = (datetime_string() + ': System detected rain.')
+                        body = (datetime_string() + ': ' + _('System detected rain.'))
                         self.try_mail(body)
                     last_rain = inputs.rain_sensed()
 
@@ -120,15 +120,16 @@ class EmailSender(Thread):
                                 if cm > 0:
                                     cm = str(cm) + " cm"
                                 else: 
-                                    cm = "Error - I2C device not found!"
+                                    cm = _('Error - I2C device not found!')
                             except Exception:
-                                cm = "Not available"
-                            body += "Finished run:\n"
-                            body += "  Program: %s\n" % run['program_name']
-                            body += "  Station: %s\n" % stations.get(run['station']).name
-                            body += "  Start time: %s \n" % datetime_string(run['start'])
-                            body += "  Duration: %02d:%02d\n\n" % (minutes, seconds)
-                            body += "Water level in tank: %s \n\n" % (cm)
+                                cm = _('Not available')
+
+                            body += _('Finished run') + ':\n'
+                            body += '<br>' + _('Program') + ': %s\n' % run['program_name']
+                            body += '<br>' + _('Station') + ': %s\n' % stations.get(run['station']).name
+                            body += '<br>' + _('Start time') + ': %s \n' % datetime_string(run['start'])
+                            body += '<br>' + _('Duration') + ': %02d:%02d\n\n' % (minutes, seconds)
+                            body += '<br>' + _('Water level in tank') + ': %s \n\n' % (cm)
 
                         self.try_mail(body)
 
@@ -137,7 +138,7 @@ class EmailSender(Thread):
                 self._sleep(5)
 
             except Exception:
-                log.error(NAME, 'E-mail plug-in:\n' + traceback.format_exc())
+                log.error(NAME, _('E-mail plug-in') + ':\n' + traceback.format_exc())
                 self._sleep(60)
 
 
@@ -172,7 +173,21 @@ def email(text, subject=None, attach=None):
         msg['From'] = gmail_name
         msg['To'] = email_options['emladr']
         msg['Subject'] = subject or email_options['emlsubject']
-        msg.attach(MIMEText(text))
+
+        html = """\
+           <html>
+             <head></head>
+             <body>
+               <p>
+                 %s
+               </p>
+             </body>
+           </html>
+               """ % text
+
+        part_text = MIMEText(html.encode('utf-8'), 'html', 'utf-8')
+        msg.attach(part_text)
+
         if attach is not None and os.path.isfile(attach) and os.access(attach, os.R_OK):  # If insert attachments
             part = MIMEBase('application', 'octet-stream')
             part.set_payload(open(attach, 'rb').read())
@@ -188,7 +203,7 @@ def email(text, subject=None, attach=None):
                              msg.as_string())  # name + e-mail address in the From: field
         mail_server.close()
     else:
-        raise Exception('E-mail plug-in is not properly configured!')
+        raise Exception(_('E-mail plug-in is not properly configured!'))
 
 
 ################################################################################
@@ -209,8 +224,9 @@ class settings_page(ProtectedPage):
             email_sender.update()
 
             if test:
-                body = (datetime_string() + ': Test e-mail from e-mail notification plugin :-).')
+                body = (datetime_string() + ': ' + _('This is test e-mail from e-mail notification plugin.'))
                 email_sender.try_mail(body)
+
 
         raise web.seeother(plugin_url(settings_page), True)
 
