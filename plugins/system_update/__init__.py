@@ -16,6 +16,8 @@ from ospy.log import log
 from plugins import PluginOptions, plugin_url
 from ospy import version
 
+import i18n
+
 
 NAME = 'System Update'
 LINK = 'status_page'
@@ -40,7 +42,7 @@ class StatusChecker(Thread):
         self.status = {
             'ver_str': version.ver_str,
             'ver_date': version.ver_date,
-            'remote': 'None!',
+            'remote': _('None!'),
             'remote_branch': 'origin/master',
             'can_update': False}
 
@@ -91,18 +93,18 @@ class StatusChecker(Thread):
         changes = '  ' + '\n  '.join(subprocess.check_output(command.split()).split('\n'))
 
         if new_revision == version.revision and new_date == version.ver_date:
-            log.info(NAME, 'Up-to-date.')
+            log.info(NAME, _('Up-to-date.'))
             self.status['can_update'] = False
         elif new_revision > version.revision:
-            log.info(NAME, 'New version is available!')
-            log.info(NAME, 'Currently running revision: %d (%s)' % (version.revision, version.ver_date))
-            log.info(NAME, 'Available revision: %d (%s)' % (new_revision, new_date))
-            log.info(NAME, 'Changes:\n' + changes)
+            log.info(NAME, _('New version is available!'))
+            log.info(NAME, _('Currently running revision') + ': %d (%s)' % (version.revision, version.ver_date))
+            log.info(NAME, _('Available revision') + ': %d (%s)' % (new_revision, new_date))
+            log.info(NAME, _('Changes') +':\n' + changes)
             self.status['can_update'] = True
         else:
-            log.info(NAME, 'Running unknown version!')
-            log.info(NAME, 'Currently running revision: %d (%s)' % (version.revision, version.ver_date))
-            log.info(NAME, 'Available revision: %d (%s)' % (new_revision, new_date))
+            log.info(NAME, _('Running unknown version!'))
+            log.info(NAME, _('Currently running revision') + ': %d (%s)' % (version.revision, version.ver_date))
+            log.info(NAME, _('Available revision') + ': %d (%s)' % (new_revision, new_date))
             self.status['can_update'] = False
 
         self._done.acquire()
@@ -124,7 +126,7 @@ class StatusChecker(Thread):
 
             except Exception:
                 self.started.set()
-                log.error(NAME, 'System update plug-in:\n' + traceback.format_exc())
+                log.error(NAME, _('System update plug-in') + ':\n' + traceback.format_exc())
                 self._sleep(60)
 
 
@@ -145,7 +147,7 @@ def perform_update():
     command = "git pull"
     output = subprocess.check_output(command.split())
 
-    log.debug(NAME, 'Update result: ' + output)
+    log.debug(NAME, _('Update result') + ': ' + output)
     restart(3)
 
 
