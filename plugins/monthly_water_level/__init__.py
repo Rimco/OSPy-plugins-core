@@ -1,5 +1,5 @@
 # !/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 
 import time
 from threading import Thread, Event
@@ -11,6 +11,7 @@ from ospy.options import level_adjustments
 from ospy.webpages import ProtectedPage
 from plugins import PluginOptions, plugin_url
 
+import i18n
 
 NAME = 'Monthly Water Level'
 LINK = 'settings_page'
@@ -53,7 +54,7 @@ class MonthChecker(Thread):
         while not self._stop.is_set():
             month = time.localtime().tm_mon - 1  # Current month.
             level_adjustments[NAME] = plugin_options[month] / 100.0  # Set the water level% (levels list is zero based).
-            log.debug(NAME, 'Monthly Adjust: Setting water level to %d%%' % plugin_options[month])
+            log.debug(NAME, _('Monthly Adjust: Setting water level to') + '%d%%' % plugin_options[month])
 
             self._sleep(_sleep_time())
 
