@@ -15,6 +15,8 @@ from ospy.options import options, rain_blocks
 from ospy.webpages import ProtectedPage
 from plugins import PluginOptions, plugin_url
 
+import i18n
+
 NAME = 'Weather-based Rain Delay'
 LINK = 'settings_page'
 
@@ -56,7 +58,7 @@ class weather_to_delay(Thread):
             try:
                 if plugin_options['enabled']:  # if Weather-based Rain Delay plug-in is enabled
                     log.clear(NAME)
-                    log.info(NAME, 'Checking rain status...')
+                    log.info(NAME, _('Checking rain status') + '...')
 
                     weather = get_weather_data() if plugin_options['weather_provider'] == "yahoo" else get_wunderground_weather_data()
                     delay = code_to_delay(weather['code'])
@@ -67,23 +69,23 @@ class weather_to_delay(Thread):
                         stop_onrain()
 
                     elif delay == 0:
-                        log.info(NAME, 'No rain detected: ' + weather['text'] + '. No action.')
+                        log.info(NAME, _('No rain detected') + ': ' + weather['text'] + '. ' + _('No action.'))
 
                     elif delay < 0:
-                        log.info(NAME, 'Good weather detected: ' + weather['text'] + '. Removing rain delay.')
+                        log.info(NAME, _('Good weather detected') + ': ' + weather['text'] + '. ' + _('Removing rain delay.'))
                         if NAME in rain_blocks:
                             del rain_blocks[NAME]
 
                     self._sleep(3600)
                 else:
                     log.clear(NAME)
-                    log.info(NAME, 'Plug-in is disabled.')
+                    log.info(NAME, _('Plug-in is disabled.'))
                     if NAME in rain_blocks:
                         del rain_blocks[NAME]
                     self._sleep(24 * 3600)
 
             except Exception:
-                log.error(NAME, 'Weather-based Rain Delay plug-in:\n' + traceback.format_exc())
+                log.error(NAME, _('Weather-based Rain Delay plug-in') + ':\n' + traceback.format_exc())
                 self._sleep(3600)
 
 
