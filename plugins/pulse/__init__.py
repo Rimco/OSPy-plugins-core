@@ -15,6 +15,8 @@ from ospy.webpages import ProtectedPage
 from plugins import PluginOptions, plugin_url
 from ospy.log import log
 
+import i18n
+
 NAME = 'Pulse Output Test'
 LINK = 'start_page'
 
@@ -44,7 +46,7 @@ class PulseSender(Thread):
 
     def run(self):
         log.clear(NAME)
-        log.info(NAME, 'Test started for ' + str(pulse_options['test_time']) + ' sec.')
+        log.info(NAME, _('Test started for') + ' ' + str(pulse_options['test_time']) + ' sec.')
         station = stations.get(pulse_options['test_output'])
 
         for x in range(0, pulse_options['test_time']):
@@ -56,7 +58,7 @@ class PulseSender(Thread):
             if self._stop.is_set():
                 break
 
-        log.info(NAME, 'Test stopped.')
+        log.info(NAME, _('Test stopped.'))
 
         # Activate again if needed:
         if station.remaining_seconds != 0:
