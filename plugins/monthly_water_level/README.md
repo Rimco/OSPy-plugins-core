@@ -8,6 +8,4 @@ Plugin setup
 -----------
 
 * Enter an adjustment for January - December:  
-  value range is 0-1000?
-
-if water level setup here and enabled Weather-based Water Level value is? level is minus plus? value
+  value range is 0-999 (0 = 0% to 999 = 999% water run Time)
