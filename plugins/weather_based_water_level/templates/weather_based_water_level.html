@@ -23,11 +23,19 @@ $var page: plugins
                 <td>
                     <input name='enabled' type='checkbox'${" checked" if plugin_options['enabled'] else ""}>
                 </td>
+                <td style='text-transform: none;'>Protect against freezing:</td>
+                <td title='Run once every hour if temperature is < 1 degree celcius.'>
+                    <input name='protect_enabled' type='checkbox'${" checked" if plugin_options['protect_enabled'] else ""}>
+                </td>
             </tr>
             <tr>
                 <td style='text-transform: none;'>Min percentage:</td>
                 <td>
                     <input name='wl_min' type='number' min="0" max="100" value="$plugin_options['wl_min']">
+                </td>
+                <td style='text-transform: none;'>Protect minutes:</td>
+                <td title='How long to run each station if it is freezing.'>
+                    <input name='protect_minutes' type='number' min="0" max="100" value="$plugin_options['protect_minutes']">
                 </td>
             </tr>
             <tr>
@@ -53,11 +61,35 @@ $var page: plugins
                 <td>
                     <input name='wapikey' type='text' value="$plugin_options['wapikey']">
                 </td>
+                <td style='text-transform: none;'>Protect stations:</td>
+                <td>
+                <select multiple name="protect_stations">
+                    $for station in [station for station in stations if station.enabled]:
+                        <option value="${str(station.index)}" ${"selected" if station.index in plugin_options["protect_stations"] else ""}>${station.name} (Output ${str(station.index+1)})</option>
+                </select>
+                </td>
             </tr>
             <tr>
                 <td style='text-transform: none;'>Status:</td>
                 <td>
                     <textarea style="font-family: monospace;" rows="7" cols="35" readonly>$'\n'.join(events)</textarea>
+                </td>
+                <td style='text-transform: none;'>Protect months:</td>
+                <td>
+                <select multiple name="protect_months">
+                    <option value="1" ${"selected" if 1 in plugin_options["protect_months"] else ""}>January</option>
+                    <option value="2" ${"selected" if 2 in plugin_options["protect_months"] else ""}>February</option>
+                    <option value="3" ${"selected" if 3 in plugin_options["protect_months"] else ""}>March</option>
+                    <option value="4" ${"selected" if 4 in plugin_options["protect_months"] else ""}>April</option>
+                    <option value="5" ${"selected" if 5 in plugin_options["protect_months"] else ""}>May</option>
+                    <option value="6" ${"selected" if 6 in plugin_options["protect_months"] else ""}>June</option>
+                    <option value="7" ${"selected" if 7 in plugin_options["protect_months"] else ""}>July</option>
+                    <option value="8" ${"selected" if 8 in plugin_options["protect_months"] else ""}>August</option>
+                    <option value="9" ${"selected" if 9 in plugin_options["protect_months"] else ""}>September</option>
+                    <option value="10" ${"selected" if 10 in plugin_options["protect_months"] else ""}>October</option>
+                    <option value="11" ${"selected" if 11 in plugin_options["protect_months"] else ""}>November</option>
+                    <option value="12" ${"selected" if 11 in plugin_options["protect_months"] else ""}>December</option>
+                </select>
                 </td>
             </tr>
         </table>

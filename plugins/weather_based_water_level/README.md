@@ -2,6 +2,7 @@ Weather-based Water Level Readme
 ====
 
 When weather-based water level is enabled, the weather will be checked every hour and the water level will be adjusted accordingly.
+In addition, it is now able to protect plants against freezing during selected months.
 
 Plugin setup
 -----------
@@ -28,5 +29,5 @@ Plugin setup
 * Status:  
   Status window from the plugin.  
 
-note:  
-if you set the minimum percent to 0%, the time switch stations set to 0. In the preview program on the main page, then it looks like the program is not working.
+Note:
+If you set the minimum percentage to 0%, the station time can be set to 0%. As a result, in the preview program on the main page it can look like the program is not working.

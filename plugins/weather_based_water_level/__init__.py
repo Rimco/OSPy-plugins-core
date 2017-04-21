@@ -18,6 +18,8 @@ from ospy.options import options
 from ospy.options import level_adjustments
 from ospy.helpers import mkdir_p
 from ospy.webpages import ProtectedPage
+from ospy.runonce import run_once
+from ospy.stations import stations
 from plugins import PluginOptions, plugin_url, plugin_data_dir
 
 NAME = 'Weather-based Water Level'
@@ -31,6 +33,10 @@ plugin_options = PluginOptions(
         'wl_max': 200,
         'days_history': 3,
         'days_forecast': 3,
+        'protect_enabled': False,
+        'protect_minutes': 10,
+        'protect_stations': [],
+        'protect_months': [],
         'wapikey': ''
     })
 
@@ -127,6 +133,19 @@ class WeatherLevelChecker(Thread):
                     log.info(NAME, 'Weather Adjustment   : %.1f%%' % water_adjustment)
 
                     level_adjustments[NAME] = water_adjustment / 100
+
+                    if plugin_options['protect_enabled']:
+                        month = time.localtime().tm_mon  # Current month.
+
+                        if today['temp_c'] <= 1.0 and month in plugin_options['protect_months']:
+                            station_seconds = {}
+                            for station in stations.enabled_stations():
+                                if station.index in plugin_options['protect_stations']:
+                                    station_seconds[station.index] = plugin_options['protect_minutes'] * 60
+                                else:
+                                    station_seconds[station.index] = 0
+
+                            run_once.set(station_seconds)
 
                     self._sleep(3600)
 
@@ -342,7 +361,7 @@ class settings_page(ProtectedPage):
         return self.plugin_render.weather_based_water_level(plugin_options, log.events(NAME))
 
     def POST(self):
-        plugin_options.web_update(web.input())
+        plugin_options.web_update(web.input(**plugin_options))
         if checker is not None:
             checker.update()
         raise web.seeother(plugin_url(settings_page), True)
