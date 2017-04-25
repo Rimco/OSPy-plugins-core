@@ -135,9 +135,10 @@ class WeatherLevelChecker(Thread):
                     level_adjustments[NAME] = water_adjustment / 100
 
                     if plugin_options['protect_enabled']:
+                        log.debug(NAME, 'Temperature: %s' % today['temperature_string'])
                         month = time.localtime().tm_mon  # Current month.
 
-                        if today['temp_c'] <= 1.0 and month in plugin_options['protect_months']:
+                        if today['temp_c'] <= 1.5 and month in plugin_options['protect_months']:
                             station_seconds = {}
                             for station in stations.enabled_stations():
                                 if station.index in plugin_options['protect_stations']:
@@ -145,7 +146,12 @@ class WeatherLevelChecker(Thread):
                                 else:
                                     station_seconds[station.index] = 0
 
-                            run_once.set(station_seconds)
+                            for station in stations.enabled_stations():
+                                if run_once.is_active(datetime.datetime.now(), station.index):
+                                    break
+                            else:
+                                log.debug(NAME, 'Protection activated.')
+                                run_once.set(station_seconds)
 
                     self._sleep(3600)
 
@@ -296,6 +302,7 @@ def today_info():
     day_info = data['current_observation']
 
     result = {
+        'temperature_string': day_info['temperature_string'],
         'temp_c': _try_float(day_info['temp_c'], 20),
         'rain_mm': _try_float(day_info['precip_today_metric']),
         'wind_ms': _try_float(day_info['wind_kph']) / 3.6,
