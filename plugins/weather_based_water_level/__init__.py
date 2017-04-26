@@ -34,6 +34,7 @@ plugin_options = PluginOptions(
         'days_history': 3,
         'days_forecast': 3,
         'protect_enabled': False,
+        'protect_temp': 2.0 if options.temp_unit == "C" else 35.6,
         'protect_minutes': 10,
         'protect_stations': [],
         'protect_months': [],
@@ -137,8 +138,9 @@ class WeatherLevelChecker(Thread):
                     if plugin_options['protect_enabled']:
                         log.debug(NAME, 'Temperature: %s' % today['temperature_string'])
                         month = time.localtime().tm_mon  # Current month.
-
-                        if today['temp_c'] <= 1.5 and month in plugin_options['protect_months']:
+                        cold = (today['temp_c'] < plugin_options['protect_temp']) if options.temp_unit == "C" else \
+                            (today['temp_f'] < plugin_options['protect_temp'])
+                        if cold and month in plugin_options['protect_months']:
                             station_seconds = {}
                             for station in stations.enabled_stations():
                                 if station.index in plugin_options['protect_stations']:
@@ -304,6 +306,7 @@ def today_info():
     result = {
         'temperature_string': day_info['temperature_string'],
         'temp_c': _try_float(day_info['temp_c'], 20),
+        'temp_f': _try_float(day_info['temp_f'], 68),
         'rain_mm': _try_float(day_info['precip_today_metric']),
         'wind_ms': _try_float(day_info['wind_kph']) / 3.6,
         'humidity': _try_float(day_info['relative_humidity'].replace('%', ''), 50)

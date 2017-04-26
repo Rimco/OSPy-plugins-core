@@ -24,7 +24,7 @@ $var page: plugins
                     <input name='enabled' type='checkbox'${" checked" if plugin_options['enabled'] else ""}>
                 </td>
                 <td style='text-transform: none;'>Protect against freezing:</td>
-                <td title='Run once every hour if temperature is < 1 degree celcius.'>
+                <td title='Run once every hour if temperature is below a certain temperature.'>
                     <input name='protect_enabled' type='checkbox'${" checked" if plugin_options['protect_enabled'] else ""}>
                 </td>
             </tr>
@@ -33,15 +33,20 @@ $var page: plugins
                 <td>
                     <input name='wl_min' type='number' min="0" max="100" value="$plugin_options['wl_min']">
                 </td>
-                <td style='text-transform: none;'>Protect minutes:</td>
-                <td title='How long to run each station if it is freezing.'>
-                    <input name='protect_minutes' type='number' min="0" max="100" value="$plugin_options['protect_minutes']">
+                <td style='text-transform: none;'>Protect temperature:</td>
+                <td title='Below which temperature (${options.temp_unit}) the stations should start.'>
+                    <input name='protect_temp' type="number" size="3" maxlength="3" min="0" max="200" value="$plugin_options['protect_temp']">
+                    ${options.temp_unit}
                 </td>
             </tr>
             <tr>
                 <td style='text-transform: none;'>Max percentage:</td>
                 <td>
                     <input name='wl_max' type='number' min="100" max="1000" value="$plugin_options['wl_max']">
+                </td>
+                <td style='text-transform: none;'>Protect minutes:</td>
+                <td title='How long to run each station if it is freezing.'>
+                    <input name='protect_minutes' type='number' min="0" max="100" value="$plugin_options['protect_minutes']">
                 </td>
             </tr>
             <tr>
