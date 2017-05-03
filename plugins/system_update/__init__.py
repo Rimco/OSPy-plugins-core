@@ -141,6 +141,12 @@ def perform_update():
     command = "git pull"
     output = subprocess.check_output(command.split())
 
+    # Go back to master (refactor is old):
+    if checker is not None:
+        if checker.status['remote_branch'] == 'origin/refactor':
+            command = 'git checkout master'
+            subprocess.check_output(command.split())
+
     log.debug(NAME, 'Update result: ' + output)
     restart(3)
 
