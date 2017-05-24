@@ -4,23 +4,18 @@
 import datetime
 from threading import Thread, Event
 import traceback
-import shutil
 import json
 import time
-import re
-import os
-import urllib
-import urllib2
 
 import web
 from ospy.log import log
 from ospy.options import options
 from ospy.options import level_adjustments
-from ospy.helpers import mkdir_p
 from ospy.webpages import ProtectedPage
 from ospy.runonce import run_once
 from ospy.stations import stations
-from plugins import PluginOptions, plugin_url, plugin_data_dir
+from ospy.weather import weather
+from plugins import PluginOptions, plugin_url
 
 NAME = 'Weather-based Water Level'
 LINK = 'settings_page'
@@ -37,8 +32,7 @@ plugin_options = PluginOptions(
         'protect_temp': 2.0 if options.temp_unit == "C" else 35.6,
         'protect_minutes': 10,
         'protect_stations': [],
-        'protect_months': [],
-        'wapikey': ''
+        'protect_months': []
     })
 
 
@@ -67,16 +61,17 @@ class WeatherLevelChecker(Thread):
             self._sleep_time -= 1
 
     def run(self):
+        weather.add_callback(self.update)
+        self._sleep(10)  # Wait for weather callback before starting
         while not self._stop.is_set():
             try:
                 log.clear(NAME)
                 if plugin_options['enabled']:
                     log.debug(NAME, "Checking weather status...")
-                    remove_data(['history_', 'conditions_', 'forecast10day_'])
 
-                    history = history_info()
-                    forecast = forecast_info()
-                    today = today_info()
+                    history = weather.get_wunderground_history(plugin_options['days_history'])
+                    forecast = weather.get_wunderground_forecast(plugin_options['days_forecast'])
+                    today = weather.get_wunderground_conditions()
 
                     info = {}
 
@@ -167,6 +162,7 @@ class WeatherLevelChecker(Thread):
             except Exception:
                 log.error(NAME, 'Weather-based water level plug-in:\n' + traceback.format_exc())
                 self._sleep(3600)
+        weather.remove_callback(self.update)
 
 
 checker = None
@@ -175,175 +171,6 @@ checker = None
 ################################################################################
 # Helper functions:                                                            #
 ################################################################################
-# Resolve location to LID
-def get_wunderground_lid():
-    if re.search("pws:", options.location):
-        lid = options.location
-    else:
-        data = urllib2.urlopen(
-            "http://autocomplete.wunderground.com/aq?h=0&query=" + urllib.quote_plus(options.location))
-        data = json.load(data)
-        if data is None:
-            return ""
-        lid = "zmw:" + data['RESULTS'][0]['zmw']
-
-    return lid
-
-
-def get_data(suffix, name=None, force=False):
-    if name is None:
-        name = suffix
-    path = os.path.join(plugin_data_dir(), name.replace(':', '_'))
-    mkdir_p(os.path.dirname(path))
-    try_nr = 1
-    data = {}
-    while try_nr <= 2:
-        try:
-            if not os.path.exists(path) or force:
-                with open(path, 'wb') as fh:
-                    req = urllib2.urlopen("http://api.wunderground.com/api/" + plugin_options['wapikey'] + "/" + suffix)
-                    while True:
-                        chunk = req.read(20480)
-                        if not chunk:
-                            break
-                        fh.write(chunk)
-
-            try:
-                with file(path, 'r') as fh:
-                    data = json.load(fh)
-            except ValueError:
-                raise Exception('Failed to read ' + path + '.')
-
-            if data is not None:
-                if 'error' in data['response']:
-                    raise Exception(path + ': ' + str(data['response']['error']))
-            else:
-                raise Exception('JSON decoding failed.')
-
-        except Exception as err:
-            if try_nr < 2:
-                log.debug(str(err), 'Retrying.')
-                os.remove(path)
-            else:
-                raise
-        try_nr += 1
-
-    return data
-
-
-def remove_data(prefixes):
-    # Delete old files
-    for prefix in prefixes:
-        check_date = datetime.date.today()
-        start_delta = datetime.timedelta(days=14)
-        day_delta = datetime.timedelta(days=1)
-        check_date -= start_delta
-        for index in range(60):
-            datestring = check_date.strftime('%Y%m%d')
-            path = os.path.join(plugin_data_dir(), prefix + datestring)
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            check_date -= day_delta
-
-
-def _try_float(val, default=0):
-    try:
-        return float(val)
-    except ValueError:
-        return default
-
-
-################################################################################
-# Info queries:                                                                #
-################################################################################
-def history_info():
-    if plugin_options['days_history'] == 0:
-        return {}
-
-    lid = get_wunderground_lid()
-    if lid == "":
-        raise Exception('No Location ID found!')
-
-    check_date = datetime.date.today()
-    day_delta = datetime.timedelta(days=1)
-
-    info = {}
-    for index in range(-1, -1 - plugin_options['days_history'], -1):
-        check_date -= day_delta
-        datestring = check_date.strftime('%Y%m%d')
-        request = "history_" + datestring + "/q/" + lid + ".json"
-
-        data = get_data(request)
-
-        if data and len(data['history']['dailysummary']) > 0:
-            info[index] = data['history']['dailysummary'][0]
-
-    result = {}
-    for index, day_info in info.iteritems():
-        result[index] = {
-            'temp_c': _try_float(day_info['maxtempm'], 20),
-            'rain_mm': _try_float(day_info['precipm']),
-            'wind_ms': _try_float(day_info['meanwindspdm']) / 3.6,
-            'humidity': _try_float(day_info['humidity'], 50)
-        }
-
-    return result
-
-
-def today_info():
-    lid = get_wunderground_lid()
-    if lid == "":
-        raise Exception('No Location ID found!')
-
-    datestring = datetime.date.today().strftime('%Y%m%d')
-
-    request = "conditions/q/" + lid + ".json"
-    name = "conditions_" + datestring + "/q/" + lid + ".json"
-    data = get_data(request, name, True)
-
-    day_info = data['current_observation']
-
-    result = {
-        'temperature_string': day_info['temperature_string'],
-        'temp_c': _try_float(day_info['temp_c'], 20),
-        'temp_f': _try_float(day_info['temp_f'], 68),
-        'rain_mm': _try_float(day_info['precip_today_metric']),
-        'wind_ms': _try_float(day_info['wind_kph']) / 3.6,
-        'humidity': _try_float(day_info['relative_humidity'].replace('%', ''), 50)
-    }
-
-    return result
-
-
-def forecast_info():
-    lid = get_wunderground_lid()
-    if lid == "":
-        raise Exception('No Location ID found!')
-
-    datestring = datetime.date.today().strftime('%Y%m%d')
-
-    request = "forecast10day/q/" + lid + ".json"
-    name = "forecast10day_" + datestring + "/q/" + lid + ".json"
-    data = get_data(request, name)
-
-    info = {}
-    for day_index, entry in enumerate(data['forecast']['simpleforecast']['forecastday']):
-        info[day_index] = entry
-
-    result = {}
-    for index, day_info in info.iteritems():
-        if index <= plugin_options['days_forecast']:
-            if day_info['qpf_allday']['mm'] is None:
-                day_info['qpf_allday']['mm'] = 0
-            result[index] = {
-                'temp_c': _try_float(day_info['high']['celsius'], 20),
-                'rain_mm': _try_float(day_info['qpf_allday']['mm']),
-                'wind_ms': _try_float(day_info['avewind']['kph']) / 3.6,
-                'humidity': _try_float(day_info['avehumidity'], 50)
-            }
-
-    return result
-
 
 def start():
     global checker
