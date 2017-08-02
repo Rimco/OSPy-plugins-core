@@ -4,8 +4,6 @@
 from ospy.webpages import ProtectedPage
 from ospy import log
 from ospy import helpers
-from ospy.programs import programs
-from ospy.options import options
 
 from plugins import plugin_url
 import web
@@ -19,8 +17,7 @@ LINK = 'status_page'
 # Helper functions:                                                            #
 ################################################################################
 def start():
-    if 'cool down' in [x.name.lower() for x in programs.get()] and 'new grass' in [x.name.lower() for x in programs.get()]:
-        options.manual_mode = False
+    pass
 
 
 stop = start
