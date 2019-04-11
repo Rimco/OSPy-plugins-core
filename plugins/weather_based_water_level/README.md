@@ -19,12 +19,7 @@ Plugin setup
   Type history days (minimum is 0, maximum is 20).
 
 * Forecast days used:  
-  Type forecast days (minimum is 0, maximum is 10).
-
-* Wunderground API Key:  
-  Type Wunderground API Key for Your account.  
-  Account for API is [here](http://www.wunderground.com/weather/api/).  
-  Example: c1511565611663 
+  Type forecast days (minimum is 0, maximum is 7).
 
 * Status:  
   Status window from the plugin.  
