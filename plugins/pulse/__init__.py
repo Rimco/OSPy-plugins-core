@@ -29,13 +29,13 @@ class PulseSender(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.daemon = True
-        self._stop = Event()
+        self._stop_event = Event()
 
         self._sleep_time = 0
         self.start()
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
 
     def update(self):
         self._sleep_time = 0
@@ -51,7 +51,7 @@ class PulseSender(Thread):
             station.active = False
             time.sleep(0.5)
 
-            if self._stop.is_set():
+            if self._stop_event.is_set():
                 break
 
         log.info(NAME, 'Test stopped.')

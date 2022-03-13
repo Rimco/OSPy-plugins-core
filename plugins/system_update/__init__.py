@@ -32,7 +32,7 @@ class StatusChecker(Thread):
         self.daemon = True
         self.started = Event()
         self._done = Condition()
-        self._stop = Event()
+        self._stop_event = Event()
 
         self.status = {
             'ver_str': version.ver_str,
@@ -45,7 +45,7 @@ class StatusChecker(Thread):
         self.start()
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
 
     def update_wait(self):
         self._done.acquire()
@@ -58,7 +58,7 @@ class StatusChecker(Thread):
 
     def _sleep(self, secs):
         self._sleep_time = secs
-        while self._sleep_time > 0 and not self._stop.is_set():
+        while self._sleep_time > 0 and not self._stop_event.is_set():
             time.sleep(1)
             self._sleep_time -= 1
 
@@ -69,23 +69,23 @@ class StatusChecker(Thread):
         subprocess.check_output(command.split())
 
         command = 'git config --get remote.origin.url'
-        remote = subprocess.check_output(command.split()).strip()
+        remote = subprocess.check_output(command.split()).decode('utf-8').strip()
         if remote:
             self.status['remote'] = remote
 
         command = 'git rev-parse --abbrev-ref --symbolic-full-name @{u}'
-        remote_branch = subprocess.check_output(command.split()).strip()
+        remote_branch = subprocess.check_output(command.split()).decode('utf-8').strip()
         if remote_branch:
             self.status['remote_branch'] = remote_branch
 
         command = 'git log -1 %s --format=%%cd --date=short' % remote_branch
-        new_date = subprocess.check_output(command.split()).strip()
+        new_date = subprocess.check_output(command.split()).decode('utf-8').strip()
 
         command = 'git rev-list %s --count --first-parent' % remote_branch
-        new_revision = int(subprocess.check_output(command.split()))
+        new_revision = int(subprocess.check_output(command.split()).decode('utf-8'))
 
         command = 'git log HEAD..%s --oneline' % remote_branch
-        changes = '  ' + '\n  '.join(subprocess.check_output(command.split()).split('\n'))
+        changes = '  ' + '\n  '.join(subprocess.check_output(command.split()).decode('utf-8').split('\n'))
 
         if new_revision == version.revision and new_date == version.ver_date:
             log.info(NAME, 'Up-to-date.')
@@ -107,7 +107,7 @@ class StatusChecker(Thread):
         self._done.release()
 
     def run(self):
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             try:
                 log.clear(NAME)
                 self._update_rev_data()
@@ -139,7 +139,7 @@ def perform_update():
     subprocess.check_output(command.split())
 
     command = "git pull"
-    output = subprocess.check_output(command.split())
+    output = subprocess.check_output(command.split()).decode('utf-8')
 
     # Go back to master (refactor is old):
     if checker is not None:

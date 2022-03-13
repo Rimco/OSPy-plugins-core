@@ -43,11 +43,11 @@ def tail(f, lines=20):
             f.seek(0,0)
             # only read what was not read
             blocks.append(f.read(block_end_byte))
-        lines_found = blocks[-1].count('\n')
+        lines_found = blocks[-1].count(b'\n')
         lines_to_go -= lines_found
         block_end_byte -= BLOCK_SIZE
         block_number -= 1
-    all_read_text = ''.join(reversed(blocks))
+    all_read_text = (b''.join(reversed(blocks))).decode('utf-8')
     return all_read_text.splitlines()[-total_lines_wanted:]
 
 
@@ -55,10 +55,11 @@ def get_overview():
     """Returns the info data as a list of lines."""
     result = []
     try:
-        with open(log.EVENT_FILE) as fh:
+        with open(log.EVENT_FILE, 'rb') as fh:
             result = tail(fh, 500)
     except Exception:
-        result.append('Error: Log file missing.')
+        import traceback
+        result = traceback.format_exc().split('\n')
 
     return result
 

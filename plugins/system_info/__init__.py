@@ -35,11 +35,10 @@ def get_overview():
     result.append('System name:    ' + platform.system())
     result.append('Node:           ' + platform.node())
     result.append('Machine:        ' + platform.machine())
-    result.append('Distribution:   ' + (platform.linux_distribution()[0]) + ' ' + (platform.linux_distribution()[1]))
     result.append('Total memory:   ' + meminfo['MemTotal'])
     result.append('Free memory:    ' + meminfo['MemFree'])
     if netdevs:
-        for dev, info in netdevs.iteritems():
+        for dev, info in netdevs.items():
             result.append('%-16s %s MiB %s MiB' % (dev + ':', info['rx'], info['tx']))
     else:
         result.append('Network:        Unknown')
@@ -65,7 +64,7 @@ def process(cmd):
         stdout=subprocess.PIPE,
         shell=True)
     output = proc.communicate()[0]
-    return output
+    return output.decode('utf-8')
 ################################################################################
 # Web pages:                                                                   #
 ################################################################################

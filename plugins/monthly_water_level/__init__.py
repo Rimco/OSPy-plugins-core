@@ -32,25 +32,25 @@ class MonthChecker(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.daemon = True
-        self._stop = Event()
+        self._stop_event = Event()
 
         self._sleep_time = 0
         self.start()
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
 
     def update(self):
         self._sleep_time = 0
 
     def _sleep(self, secs):
         self._sleep_time = secs
-        while self._sleep_time > 0 and not self._stop.is_set():
+        while self._sleep_time > 0 and not self._stop_event.is_set():
             time.sleep(1)
             self._sleep_time -= 1
 
     def run(self):
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             month = time.localtime().tm_mon - 1  # Current month.
             level_adjustments[NAME] = plugin_options[month] / 100.0  # Set the water level% (levels list is zero based).
             log.debug(NAME, 'Monthly Adjust: Setting water level to %d%%' % plugin_options[month])
