@@ -56,17 +56,17 @@ class weather_to_delay(Thread):
 
                     current_data = weather.get_current_data()
 
-                    if 'precipProbability' in current_data:
-                        if current_data['precipProbability'] > 0.75:
-                            log.info(NAME, 'Rain detected: ' + current_data['summary'] + '. Adding delay of ' + str(plugin_options['delay_duration']))
+                    if 'precipitation' in current_data:
+                        if current_data['precipitation'] > 0.75:
+                            log.info(NAME, 'Rain detected. Adding delay of ' + str(plugin_options['delay_duration']))
                             rain_blocks[NAME] = datetime.datetime.now() + datetime.timedelta(hours=float(plugin_options['delay_duration']))
                             stop_onrain()
 
-                        elif current_data['precipProbability'] > 0.1:
-                            log.info(NAME, 'No rain detected: ' + current_data['summary'] + '. No action.')
+                        elif current_data['precipitation'] > 0.1:
+                            log.info(NAME, 'No rain detected. No action.')
 
                         else:
-                            log.info(NAME, 'Good weather detected: ' + current_data['summary'] + '. Removing rain delay.')
+                            log.info(NAME, 'Good weather detected. Removing rain delay.')
                             if NAME in rain_blocks:
                                 del rain_blocks[NAME]
 
